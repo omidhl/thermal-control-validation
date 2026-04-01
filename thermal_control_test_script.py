@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+Author: Omid Madani
+
 Bench validation script for PWM-to-RPM verification on an embedded thermal control system.
 
 Features:
