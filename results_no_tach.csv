@@ -1,0 +1,5 @@
+timestamp,pwm_percent,expected_rpm,measured_rpm,tolerance_percent,pass_fail,notes
+2026-04-03 14:56:10,20,1800,,12.0,FAIL,Simulated fault: no tachometer response
+2026-04-03 14:56:12,40,3200,,10.0,FAIL,Simulated fault: no tachometer response
+2026-04-03 14:56:14,60,4600,,10.0,FAIL,Simulated fault: no tachometer response
+2026-04-03 14:56:16,80,5900,,8.0,FAIL,Simulated fault: no tachometer response

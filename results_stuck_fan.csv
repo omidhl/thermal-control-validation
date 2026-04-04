@@ -1,5 +1,5 @@
 timestamp,pwm_percent,expected_rpm,measured_rpm,tolerance_percent,pass_fail,notes
-2026-04-01 13:28:56,20,1800,0,12.0,FAIL,RPM outside tolerance
-2026-04-01 13:28:58,40,3200,0,10.0,FAIL,RPM outside tolerance
-2026-04-01 13:29:00,60,4600,0,10.0,FAIL,RPM outside tolerance
-2026-04-01 13:29:02,80,5900,0,8.0,FAIL,RPM outside tolerance
+2026-04-03 14:55:06,20,1800,0,12.0,FAIL,RPM outside tolerance
+2026-04-03 14:55:08,40,3200,0,10.0,FAIL,RPM outside tolerance
+2026-04-03 14:55:10,60,4600,0,10.0,FAIL,RPM outside tolerance
+2026-04-03 14:55:12,80,5900,0,8.0,FAIL,RPM outside tolerance

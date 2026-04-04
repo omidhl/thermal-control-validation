@@ -37,14 +37,15 @@ try:
 except ImportError:
     serial = None
 
-
+# Data structure for defining one test case: PWM setting, expected RPM, and allowed tolerance
 @dataclass
 class TestPoint:
     pwm_percent: int
     expected_rpm: int
     tolerance_percent: float
 
-
+# Abstract interface for Device Under Test (DUT)
+# Allows switching between real hardware and simulated DUT without changing test logic
 class DUTInterface:
     def close(self) -> None:
         pass
@@ -55,7 +56,8 @@ class DUTInterface:
     def get_rpm(self) -> int:
         raise NotImplementedError
 
-
+# Real hardware implementation using UART/serial communication
+# Sends commands to firmware and reads back responses
 class SerialDUT(DUTInterface):
     def __init__(self, port: str, baudrate: int, timeout: float = 1.5) -> None:
         if serial is None:
@@ -67,8 +69,10 @@ class SerialDUT(DUTInterface):
 
     def send_command(self, command: str) -> str:
         self.ser.reset_input_buffer()
+        # Send command to DUT (newline-terminated protocol)
         self.ser.write((command.strip() + "\n").encode("utf-8"))
         self.ser.flush()
+        # Read single-line response from DUT (blocking until timeout or data received)
         response = self.ser.readline().decode("utf-8", errors="replace").strip()
         if not response:
             raise RuntimeError(f"No response for command: {command}")
@@ -87,7 +91,8 @@ class SerialDUT(DUTInterface):
             raise RuntimeError(f"Unexpected GET_RPM response: {response}")
         return int(response.split(":", 1)[1])
 
-
+# Simulated DUT used for testing without physical hardware
+# Supports fault injection (e.g., stuck fan, no tach, low tach)
 class SimulatedDUT(DUTInterface):
     def __init__(self, fault_mode: str = "none", rpm_scale: float = 1.0) -> None:
         self.current_pwm = 0
@@ -129,7 +134,7 @@ def rpm_in_tolerance(measured: int, expected: int, tolerance_percent: float) -> 
     upper = expected * (1.0 + tolerance_percent / 100.0)
     return lower <= measured <= upper
 
-
+# Main test loop: applies PWM setpoints, reads RPM, and validates against expected behavior
 def run_test(
     dut: DUTInterface,
     points: list[TestPoint],
@@ -137,7 +142,7 @@ def run_test(
     csv_path: Path,
 ) -> int:
     failures = 0
-
+    # Log test results to CSV for traceability and post-analysis
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
         writer.writerow(
@@ -151,7 +156,7 @@ def run_test(
                 "notes",
             ]
         )
-
+        # Execute one test point: apply PWM, measure RPM, evaluate pass/fail
         for point in points:
             print(f"\nApplying PWM={point.pwm_percent}%")
             notes = ""
@@ -176,6 +181,7 @@ def run_test(
                 if not passed:
                     failures += 1
                     notes = "RPM outside tolerance"
+            # Capture and log errors per test point without stopping the entire test run
             except Exception as exc:
                 failures += 1
                 notes = str(exc)
@@ -206,6 +212,7 @@ def build_default_points() -> list[TestPoint]:
 
 
 def parse_args() -> argparse.Namespace:
+    # Define CLI arguments to configure test execution (simulation mode, output file, serial settings)
     parser = argparse.ArgumentParser(
         description="Validate tachometer RPM against PWM command on a DUT."
     )
@@ -236,7 +243,7 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
-
+# Factory function to create either a real DUT or a simulated DUT based on user input
 def make_dut(args: argparse.Namespace) -> DUTInterface:
     if args.simulate_fault != "none":
         print(f"Running in simulated mode with fault='{args.simulate_fault}'")
@@ -251,7 +258,7 @@ def make_dut(args: argparse.Namespace) -> DUTInterface:
 
 def main() -> int:
     args = parse_args()
-    print(f"DEBUG: simulate_fault={args.simulate_fault}")
+    #print(f"DEBUG: simulate_fault={args.simulate_fault}")
     points = build_default_points()
     csv_path = Path(args.csv)
 
